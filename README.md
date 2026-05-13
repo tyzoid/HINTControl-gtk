@@ -1,5 +1,9 @@
 # T-Mobile Home Internet Control (gtk)
 
+> Warning: This project was vibe coded with some human review and changes. Use and package it with that in mind.
+>
+> Note: Per US copyright law, works authored by AI are not protected by copyright, and are thus Public Domain. However, the human-authored elements of this project are protected by copyright, and are licensed under MIT, in accordance with the original project.
+
 Linux-only Rust + GTK4 rewrite of the desktop T-Mobile Home Internet Control app.
 
 This project is based on the original

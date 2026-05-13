@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct AuthResponse {
@@ -117,6 +117,7 @@ pub struct ClientBands {
     pub five_gig: Option<Vec<ClientDevice>>,
     #[serde(rename = "6.0ghz")]
     pub six_gig: Option<Vec<ClientDevice>>,
+    pub wifi: Option<Vec<ClientDevice>>,
     pub ethernet: Option<Vec<ClientDevice>>,
 }
 
@@ -131,54 +132,113 @@ pub struct ClientDevice {
 
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq)]
 pub struct WifiConfig {
-    #[serde(rename = "2.4ghz")]
+    #[serde(rename = "2.4ghz", skip_serializing_if = "Option::is_none")]
     pub two_gig: Option<BandConfig>,
-    #[serde(rename = "5.0ghz")]
+    #[serde(rename = "5.0ghz", skip_serializing_if = "Option::is_none")]
     pub five_gig: Option<BandConfig>,
-    #[serde(rename = "6.0ghz")]
+    #[serde(rename = "6.0ghz", skip_serializing_if = "Option::is_none")]
     pub six_gig: Option<BandConfig>,
-    #[serde(rename = "bandSteering")]
+    #[serde(rename = "bandSteering", skip_serializing_if = "Option::is_none")]
     pub band_steering: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ssids: Option<Vec<SsidConfig>>,
+    #[serde(flatten)]
+    pub extra: Map<String, Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq)]
 pub struct BandConfig {
-    #[serde(rename = "airtimeFairness")]
+    #[serde(rename = "airtimeFairness", skip_serializing_if = "Option::is_none")]
     pub airtime_fairness: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub channel: Option<String>,
-    #[serde(rename = "channelBandwidth")]
+    #[serde(rename = "channelBandwidth", skip_serializing_if = "Option::is_none")]
     pub channel_bandwidth: Option<String>,
-    #[serde(rename = "isMUMIMOEnabled")]
+    #[serde(rename = "isMUMIMOEnabled", skip_serializing_if = "Option::is_none")]
     pub is_mu_mimo_enabled: Option<bool>,
-    #[serde(rename = "isRadioEnabled")]
+    #[serde(rename = "isRadioEnabled", skip_serializing_if = "Option::is_none")]
     pub is_radio_enabled: Option<bool>,
-    #[serde(rename = "isWMMEnabled")]
+    #[serde(rename = "isWMMEnabled", skip_serializing_if = "Option::is_none")]
     pub is_wmm_enabled: Option<bool>,
-    #[serde(rename = "maxClients")]
+    #[serde(rename = "maxClients", skip_serializing_if = "Option::is_none")]
     pub max_clients: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mode: Option<String>,
-    #[serde(rename = "transmissionPower")]
+    #[serde(rename = "transmissionPower", skip_serializing_if = "Option::is_none")]
     pub transmission_power: Option<String>,
+    #[serde(flatten)]
+    pub extra: Map<String, Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq)]
 pub struct SsidConfig {
-    #[serde(rename = "2.4ghzSsid")]
+    #[serde(rename = "2.4ghzSsid", skip_serializing_if = "Option::is_none")]
     pub two_gig_ssid: Option<bool>,
-    #[serde(rename = "5.0ghzSsid")]
+    #[serde(rename = "5.0ghzSsid", skip_serializing_if = "Option::is_none")]
     pub five_gig_ssid: Option<bool>,
-    #[serde(rename = "6.0ghzSsid")]
+    #[serde(rename = "6.0ghzSsid", skip_serializing_if = "Option::is_none")]
     pub six_gig_ssid: Option<bool>,
-    #[serde(rename = "encryptionMode")]
+    #[serde(rename = "encryptionMode", skip_serializing_if = "Option::is_none")]
     pub encryption_mode: Option<String>,
-    #[serde(rename = "encryptionVersion")]
+    #[serde(rename = "encryptionVersion", skip_serializing_if = "Option::is_none")]
     pub encryption_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub guest: Option<bool>,
-    #[serde(rename = "isBroadcastEnabled")]
+    #[serde(rename = "isBroadcastEnabled", skip_serializing_if = "Option::is_none")]
     pub is_broadcast_enabled: Option<bool>,
-    #[serde(rename = "ssidName")]
+    #[serde(rename = "ssidName", skip_serializing_if = "Option::is_none")]
     pub ssid_name: Option<String>,
-    #[serde(rename = "wpaKey")]
+    #[serde(rename = "wpaKey", skip_serializing_if = "Option::is_none")]
     pub wpa_key: Option<String>,
+    #[serde(flatten)]
+    pub extra: Map<String, Value>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wifi_config_serialization_omits_none_fields() {
+        let config = WifiConfig {
+            two_gig: Some(BandConfig {
+                is_radio_enabled: Some(true),
+                ..BandConfig::default()
+            }),
+            ..WifiConfig::default()
+        };
+
+        let value = serde_json::to_value(config).unwrap();
+        assert_eq!(value["2.4ghz"]["isRadioEnabled"], true);
+        assert!(value["2.4ghz"].get("channel").is_none());
+        assert!(value.get("5.0ghz").is_none());
+        assert!(value.get("ssids").is_none());
+    }
+
+    #[test]
+    fn wifi_config_round_trips_unknown_fields() {
+        let json = serde_json::json!({
+            "2.4ghz": {
+                "isRadioEnabled": true,
+                "vendorBandField": "kept"
+            },
+            "ssids": [{
+                "ssidName": "Main",
+                "wpaKey": "secret",
+                "vendorSsidField": 42
+            }],
+            "vendorRootField": { "nested": true }
+        });
+
+        let mut config: WifiConfig = serde_json::from_value(json).unwrap();
+        config.two_gig.as_mut().unwrap().is_radio_enabled = Some(false);
+        config.ssids.as_mut().unwrap()[0].ssid_name = Some("Renamed".to_string());
+
+        let value = serde_json::to_value(config).unwrap();
+        assert_eq!(value["2.4ghz"]["isRadioEnabled"], false);
+        assert_eq!(value["2.4ghz"]["vendorBandField"], "kept");
+        assert_eq!(value["ssids"][0]["ssidName"], "Renamed");
+        assert_eq!(value["ssids"][0]["vendorSsidField"], 42);
+        assert_eq!(value["vendorRootField"]["nested"], true);
+    }
 }
