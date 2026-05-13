@@ -1,6 +1,9 @@
 .gradle
 build/
 target/
+/releng/arch/pkg/
+/releng/arch/src/
+*.pkg.tar.*
 debug/
 release/
 *.rlib
@@ -39,7 +42,6 @@ bin/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
-/dist/
 /nbdist/
 /.nb-gradle/
 

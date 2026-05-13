@@ -31,3 +31,38 @@ cargo run
 ```
 
 On Debian/Ubuntu-like systems the GTK package is typically `libgtk-4-dev`; on Arch it is `gtk4`.
+
+## Package Builds
+
+### Arch
+
+Build from the Arch packaging directory:
+
+```sh
+cd releng/arch
+makepkg -f
+```
+
+The generated package is written under `releng/arch/`.
+
+### Ubuntu
+
+Build inside the Ubuntu container:
+
+```sh
+./releng/ubuntu/build-deb-container.sh
+```
+
+The script uses `ubuntu:26.04` by default. Set `DEB_BUILD_IMAGE` to use another image:
+
+```sh
+DEB_BUILD_IMAGE=ubuntu:26.04 ./releng/ubuntu/build-deb-container.sh
+```
+
+The generated `.deb` is written to `target/ubuntu/`.
+
+If the build dependencies are already installed locally, the package can also be built without a container:
+
+```sh
+./releng/ubuntu/build-deb.sh
+```

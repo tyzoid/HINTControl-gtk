@@ -1,0 +1,11 @@
+Package: hintcontrol-gtk
+Version: @VERSION@
+Section: net
+Priority: optional
+Architecture: @ARCH@
+Maintainer: Tyler
+Installed-Size: @INSTALLED_SIZE@
+Depends: libc6, libgcc-s1, libgtk-4-1, libssl3 | libssl3t64
+Description: GTK4 desktop app for managing T-Mobile Home Internet gateways
+ HINTControl-gtk provides a Linux desktop interface for viewing gateway signal
+ details, managing Wi-Fi settings, and controlling gateway sessions.

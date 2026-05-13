@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=HINTControl-gtk
+Comment=Manage a T-Mobile Home Internet gateway
+Exec=hintcontrol-gtk
+Icon=dev.zwander.hintcontrol.gtk
+Terminal=false
+Categories=Network;
+StartupNotify=true

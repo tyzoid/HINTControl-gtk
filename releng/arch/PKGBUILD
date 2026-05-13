@@ -1,0 +1,31 @@
+# Maintainer: Tyler
+pkgname=hintcontrol-gtk
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Linux GTK4 desktop app for managing T-Mobile Home Internet gateways"
+arch=('x86_64')
+url="https://github.com/zacharee/HINTControl"
+license=('MIT')
+depends=('gtk4' 'gcc-libs' 'glibc' 'openssl')
+makedepends=('cargo')
+options=('!lto')
+source=()
+sha256sums=()
+_repo_root="$startdir/../.."
+
+build() {
+  cd "$_repo_root"
+  cargo build --release --locked
+}
+
+check() {
+  cd "$_repo_root"
+  cargo test --locked
+}
+
+package() {
+  cd "$_repo_root"
+  install -Dm755 "target/release/hintcontrol-gtk" "$pkgdir/usr/bin/hintcontrol-gtk"
+  install -Dm644 "dist/hintcontrol-gtk.desktop" "$pkgdir/usr/share/applications/hintcontrol-gtk.desktop"
+  install -Dm644 "LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
