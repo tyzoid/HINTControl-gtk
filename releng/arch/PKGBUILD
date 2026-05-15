@@ -6,21 +6,29 @@ pkgdesc="Linux GTK4 desktop app for managing T-Mobile Home Internet gateways"
 arch=('x86_64')
 url="https://github.com/zacharee/HINTControl"
 license=('MIT')
-depends=('gtk4' 'gcc-libs' 'glibc' 'openssl')
+depends=('gtk4' 'libgcc' 'glibc' 'openssl')
 makedepends=('cargo')
-options=('!lto')
 source=()
 sha256sums=()
 _repo_root="$startdir/../.."
 
+prepare() {
+  cd "$_repo_root"
+  export RUSTUP_TOOLCHAIN=stable
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
 build() {
   cd "$_repo_root"
-  cargo build --release --locked
+  export RUSTUP_TOOLCHAIN=stable
+  export CARGO_TARGET_DIR=target
+  cargo build --frozen --release --all-features
 }
 
 check() {
   cd "$_repo_root"
-  cargo test --locked
+  export RUSTUP_TOOLCHAIN=stable
+  cargo test --frozen --all-features
 }
 
 package() {
