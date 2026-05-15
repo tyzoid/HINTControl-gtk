@@ -1196,6 +1196,14 @@ fn wire_actions(
     reboot: Button,
     logout: Button,
 ) {
+    for entry in [&ui.gateway_ip, &ui.username] {
+        let login = login.clone();
+        entry.connect_activate(move |_| login.emit_clicked());
+    }
+    let login_for_password = login.clone();
+    ui.password
+        .connect_activate(move |_| login_for_password.emit_clicked());
+
     let ui_login = ui.clone();
     login.connect_clicked(move |_| {
         ui_login.set_status("Logging in...", false);
